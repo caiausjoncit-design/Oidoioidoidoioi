@@ -201,7 +201,7 @@ Tab:AddToggle({
 })
 getgenv().AutoStart = true
 
-Tab5:AddToggle({
+Tab:AddToggle({
 	Name = "Auto Start",
 	Default = true,
 	Callback = function(Value)
