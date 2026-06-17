@@ -801,7 +801,7 @@ Tab:AddToggle({
 })
 
 task.spawn(function()
-	while task.wait(1) do
+	while task.wait(19999) do
 		if not AutoPhePhaV3 then
 			continue
 		end
