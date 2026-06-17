@@ -506,3 +506,150 @@ Tab:AddToggle({
 		end
 	end
 })
+local AutoPhePha = True
+
+Tab:AddToggle({
+	Name = "Auto Phê Pha V2",
+	Default = true,
+	Callback = function(Value)
+		AutoPhePha = Value
+
+		task.spawn(function()
+			while AutoPhePha do
+				pcall(function()
+					local player = game.Players.LocalPlayer
+					local charFolder = workspace:FindFirstChild("Characters")
+
+					if charFolder then
+						local char = charFolder:FindFirstChild(player.Name)
+
+						if char and not char:FindFirstChild("Mode") then
+							local args = {
+								{
+									Camera = CFrame.new(
+										-28.790475845336914,
+										298.4656677246094,
+										-91.82173156738281,
+										0.8630251884460449,
+										0.06684061139822006,
+										-0.5007192492485046,
+										0,
+										0.9912075996398926,
+										0.1323155164718628,
+										0.5051608085632324,
+										-0.11419162154197693,
+										0.855437159538269
+									),
+									SkillId = "10",
+									Began = true,
+									CFrame = CFrame.new(
+										-20.313318252563477,
+										294.6113586425781,
+										-106.30424499511719,
+										0.863025426864624,
+										0.06684055924415588,
+										-0.5007189512252808,
+										-8.083265612413015e-09,
+										0.9912076592445374,
+										0.1323154717683792,
+										0.5051605105400085,
+										-0.11419161409139633,
+										0.8554373979568481
+									),
+									["Typ\208\181"] = 1,
+									Aim = vector.create(
+										4.722629547119141,
+										287.9955749511719,
+										-149.07611083984375
+									)
+								}
+							}
+
+							game:GetService("ReplicatedStorage")
+								:WaitForChild("Remotes")
+								:WaitForChild("SkillRemote")
+								:FireServer(unpack(args))
+						end
+					end
+				end)
+
+				task.wait(1.5)
+			end
+		end)
+	end
+})
+local chargeArgs = {{
+    Camera = CFrame.new(640.81549,595.6267,-148.80317),
+    SkillId = "2",
+    Began = true,
+    CFrame = CFrame.new(630.13879,587.79492,-149.98782),
+    ["Typ\208\181"] = 1,
+    Aim = vector.create(580.19,587.79,-152.32)
+}}
+
+local releaseArgs = {{
+    Camera = CFrame.new(640.81549,595.6267,-148.80317),
+    SkillId = "2",
+    Began = false,
+    CFrame = CFrame.new(630.13879,587.79492,-149.98782),
+    ["Typ\208\181"] = 1,
+    Aim = vector.create(633.96,584.97,-140.55)
+}}
+
+local AutoEnergyEnabled = true
+local isCharging = true
+
+Tab:AddToggle({
+    Name = "Auto Năng Lượng ⚡",
+    Default = true,
+    Callback = function(Value)
+        AutoEnergyEnabled = Value
+        isCharging = false
+
+        task.spawn(function()
+            while AutoEnergyEnabled do
+                local player = game.Players.LocalPlayer
+                local char = player.Character
+
+                if not char then task.wait(1) continue end
+
+                local status = char:FindFirstChild("Status")
+                local energy = status and status:FindFirstChild("CurrentEnergy")
+
+                if energy then
+                    local current = energy.Value
+
+                    if current <= 1000 and not isCharging then
+                        isCharging = true
+
+                        game.ReplicatedStorage.Remotes.SkillRemote:FireServer(unpack(chargeArgs))
+
+                        local last = current
+                        local noUp = 0
+
+                        for i = 1,8 do
+                            task.wait(0.5)
+                            if not AutoEnergyEnabled then break end
+
+                            local now = energy.Value
+                            if now <= last + 20 then
+                                noUp += 1
+                                if noUp >= 4 then
+                                    break
+                                end
+                            else
+                                noUp = 0
+                                last = now
+                            end
+                        end
+
+                        game.ReplicatedStorage.Remotes.SkillRemote:FireServer(unpack(releaseArgs))
+                        isCharging = false
+                    end
+                end
+
+                task.wait(0.8)
+            end
+        end)
+    end
+})
