@@ -411,7 +411,7 @@ Tab:AddToggle({
 					end
 				end)
 
-				task.wait(5555.5)
+				task.wait(2.5)
 			end
 		end)
 	end
