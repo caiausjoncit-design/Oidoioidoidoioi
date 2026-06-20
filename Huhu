@@ -118,69 +118,66 @@ Tab:AddToggle({
 OrionLib:Init()
 
 
-
-local AutoBlast = true
-
--- ==================== CONFIG ====================
-local TargetPosition = Vector3.new(41.9730225, 276.267853, 316.27887)  -- Vị trí Event Mobs
-local MobFolder = workspace["World Mobs"]:WaitForChild("Event Mobs")
--- ===============================================
+getgenv().AutoBlast = true
 
 Tab:AddToggle({
-    Name = "Auto Energy Blast",
-    Default = true,
-    Callback = function(Value)
-        AutoBlast = Value
-        
-        if Value then  
-            task.spawn(function()  
-                while AutoBlast do  
-                    -- Tìm mob gần nhất trong Event Mobs
-                    local TargetCFrame = nil
-                    local ClosestDist = math.huge
-                    
-                    for _, Mob in pairs(MobFolder:GetChildren()) do
-                        local Humanoid = Mob:FindFirstChildOfClass("Humanoid")
-                        local MobRoot = Mob:FindFirstChild("HumanoidRootPart")
-                        
-                        if Humanoid and MobRoot and Humanoid.Health > 0 then
-                            local Dist = (MobRoot.Position - TargetPosition).Magnitude
-                            if Dist < ClosestDist then
-                                ClosestDist = Dist
-                                TargetCFrame = MobRoot.CFrame
-                            end
-                        end
-                    end
-                    
-                    -- Nếu không tìm thấy mob thì dùng vị trí cố định
-                    if not TargetCFrame then
-                        TargetCFrame = CFrame.new(TargetPosition)
-                    end
-                    
-                    local args = {  
-                        {  
-                            Camera = TargetCFrame * CFrame.new(0, 10, -30),  -- Camera nhìn xuống mob
-                            SkillId = "101",  
-                            Began = true,  
-                            CFrame = TargetCFrame,  
-                            ["Typе"] = 1,  
-                            Aim = TargetCFrame.Position  
-                        }  
-                    }  
+	Name = "Auto Energy Blast",
+	Default = true,
+	Callback = function(Value)
+		getgenv().AutoBlast = Value
 
-                    game:GetService("ReplicatedStorage")  
-                        :WaitForChild("Remotes")  
-                        :WaitForChild("SkillRemote")  
-                        :FireServer(unpack(args))  
+		if Value then
+			task.spawn(function()
+				local TargetPosition = Vector3.new(41.9730225, 276.267853, 316.27887)
+				local MobFolder = workspace["World Mobs"]:WaitForChild("Event Mobs")
 
-                    task.wait(0.00001)  
-                end  
-            end)  
-        end  
-    end
+				task.wait(5) -- đợi 5 giây trước khi bắt đầu
+
+				while getgenv().AutoBlast do
+					local TargetCFrame = nil
+					local ClosestDist = math.huge
+
+					for _, Mob in pairs(MobFolder:GetChildren()) do
+						local Humanoid = Mob:FindFirstChildOfClass("Humanoid")
+						local MobRoot = Mob:FindFirstChild("HumanoidRootPart")
+
+						if Humanoid and MobRoot and Humanoid.Health > 0 then
+							local Dist = (MobRoot.Position - TargetPosition).Magnitude
+
+							if Dist < ClosestDist then
+								ClosestDist = Dist
+								TargetCFrame = MobRoot.CFrame
+							end
+						end
+					end
+
+					if not TargetCFrame then
+						TargetCFrame = CFrame.new(TargetPosition)
+					end
+
+					local args = {
+						{
+							Camera = TargetCFrame * CFrame.new(0, 10, -30),
+							SkillId = "101",
+							Began = true,
+							CFrame = TargetCFrame,
+							["Typе"] = 1,
+							Aim = TargetCFrame.Position
+						}
+					}
+
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Remotes")
+						:WaitForChild("SkillRemote")
+						:FireServer(unpack(args))
+
+					task.wait(0.1)
+				end
+			end)
+		end
+	end
 })
 
-OrionLib:Init()
                             
 Tab:AddToggle({
     Name = "Auto Play (Next Area)",
