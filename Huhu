@@ -254,7 +254,7 @@ Tab:AddToggle({
 })
 Tab:AddToggle({
     Name = "Godmode",
-    Default = true,
+    Default = falsee,
     Callback = function(v)
         getgenv().AntiDie = v
         spawn(function()
@@ -344,11 +344,11 @@ Tab:AddToggle({
 		end)
 	end
 })
-local AutoPhePha = True
+local AutoPhePha = false
 
 Tab:AddToggle({
 	Name = "Auto PhĂª Pha V2",
-	Default = True,
+	Default = false,
 	Callback = function(Value)
 		AutoPhePha = Value
 
@@ -411,7 +411,7 @@ Tab:AddToggle({
 					end
 				end)
 
-				task.wait(2.5)
+				task.wait(99995)
 			end
 		end)
 	end
@@ -787,59 +787,101 @@ Tab:AddToggle({
 })
 
 OrionLib:Init()
-local AutoPhePhaV3 = true
+local Toggle = true
+local DaDungSkill = true
 
-Tab:AddToggle({
-	Name = "Auto phê pha v3",
+Tab5:AddToggle({
+	Name = "Auto phê pha",
 	Default = true,
 	Callback = function(Value)
-		AutoPhePhaV3 = Value
+		Toggle = Value
+
+		if not Toggle then
+			DaDungSkill = false
+			return
+		end
+
+		task.spawn(function()
+			while Toggle do
+				task.wait(1)
+
+				local worldMobs = workspace:FindFirstChild("World Mobs")
+				local eventMobs = worldMobs and worldMobs:FindFirstChild("Event Mobs")
+
+				if not eventMobs then
+					continue
+				end
+
+				local seijin = eventMobs:FindFirstChild("Ancient Seijin")
+				local garriot = eventMobs:FindFirstChild("Garriot")
+
+				-- Chỉ được fire khi:
+				-- Có Ancient Seijin
+				-- Và chưa dùng skill lần nào
+				if seijin and not DaDungSkill then
+					DaDungSkill = true
+
+					task.wait(2)
+
+					if not Toggle then
+						break
+					end
+
+					local args = {
+						{
+							Camera = CFrame.new(
+								82.16252899169922, 343.9701232910156, -1494.8489990234375,
+								-0.7575300931930542, 0.24766631424427032, -0.6039947271347046,
+								0, 0.925236701965332, 0.3793906569480896,
+								0.6528002619743347, 0.2873998284339905, -0.7008945941925049
+							),
+
+							SkillId = "10",
+							Began = true,
+
+							CFrame = CFrame.new(
+								91.51288604736328, 336.3675537109375, -1483.99853515625,
+								-0.7575298547744751, 0.24766628444194794, -0.6039949655532837,
+								-6.852729228512544e-08, 0.9252366423606873, 0.37939053773880005,
+								0.6528005003929138, 0.2873997092247009, -0.7008943557739258
+							),
+
+							["Typе"] = 1,
+
+							Aim = vector.create(
+								121.71263122558594,
+								317.3980407714844,
+								-1448.953857421875
+							)
+						}
+					}
+
+					game:GetService("ReplicatedStorage")
+						:WaitForChild("Remotes")
+						:WaitForChild("SkillRemote")
+						:FireServer(unpack(args))
+				end
+
+				-- Sau khi đã fire rồi thì bắt buộc phải có Garriot
+				if DaDungSkill and garriot then
+					local hum = garriot:FindFirstChildOfClass("Humanoid")
+
+					if hum then
+						-- Đợi Garriot chết
+						repeat
+							task.wait(1)
+						until hum.Health <= 0 or not Toggle
+
+						-- Đợi Garriot biến mất
+						repeat
+							task.wait(1)
+						until not eventMobs:FindFirstChild("Garriot") or not Toggle
+
+						-- Reset để chờ Ancient Seijin mới
+						DaDungSkill = false
+					end
+				end
+			end
+		end)
 	end
 })
-
-task.spawn(function()
-	while task.wait(19999) do
-		if not AutoPhePhaV3 then
-			continue
-		end
-
-		local HasMode = false
-
-		for _, Char in pairs(workspace.Characters:GetChildren()) do
-			if Char:FindFirstChild("Mode") then
-				HasMode = true
-				break
-			end
-		end
-
-		if not HasMode then
-			local args = {
-				{
-					Camera = CFrame.new(
-						74.2727279663086, 251.0009002685547, -28.747745513916016,
-						-0.9511321783065796, -0.044049736112356186, 0.3056260347366333,
-						0, 0.9897724390029907, 0.14265543222427368,
-						-0.308784157037735, 0.13568417727947235, -0.9414043426513672
-					),
-					SkillId = "10",
-					Began = true,
-					CFrame = CFrame.new(
-						70.45240020751953,
-						247.81771850585938,
-						-16.98019027709961
-					),
-					["Typе"] = 1,
-					Aim = vector.create(
-						70.45240020751953,
-						247.81771850585938,
-						-66.98019409179688
-					)
-				}
-			}
-
-			game:GetService("ReplicatedStorage")
-				.Remotes.SkillRemote
-				:FireServer(unpack(args))
-		end
-	end
-end)
